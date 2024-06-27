@@ -2,6 +2,7 @@ package com.example.livetv;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,7 +21,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import android.content.SharedPreferences;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
@@ -47,14 +49,44 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Channel> channelList;
     private ProgressBar progressBar;
+    private String token;
+    private Button logout_btn;
+    private TextView username;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        token = getIntent().getStringExtra("jwt_token");
         // Initialize channelList
         channelList = new ArrayList<>();
         progressBar = findViewById(R.id.progressBar);
+
+        logout_btn = findViewById(R.id.logout_btn);
+        username = findViewById(R.id.username);
+
+        if (token == null || token.isEmpty()) {
+            logout_btn.setText("LOGIN");
+        }
+
+
+        logout_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sharedPreferences = getSharedPreferences("MyPrefsFile", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("accessToken", "");
+                editor.apply();
+
+                if(token != null && !token.isEmpty()){
+                    Toast.makeText(MainActivity.this, "You are logged out!", Toast.LENGTH_SHORT).show();
+                }
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
 
         // Execute AsyncTask to fetch JSON data
         new FetchDataAsyncTask().execute();
@@ -100,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
     public String endpoint() {
         OkHttpClient client = new OkHttpClient();
 
@@ -108,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("Authorization", "Bearer " + token)
                 .build();
 
         try {
@@ -137,7 +171,16 @@ public class MainActivity extends AppCompatActivity {
         try {
             JSONArray jsonArray = new JSONArray(jsonData);
             JSONObject dataObject = jsonArray.getJSONObject(0); // Assuming there's only one object in the array
-
+            String msg = dataObject.getString("message");
+            String user = dataObject.getString("user").toString();
+            if(!user.equals("NO USER")){
+                JSONObject fulluser = dataObject.getJSONObject("user");
+                username.setText("Hello, "+fulluser.getString("fullName"));
+            }
+            else{
+                username.setText("Please login to access all channels");
+            }
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             JSONArray videosArray = dataObject.getJSONArray("videos");
             for (int i = 0; i < videosArray.length(); i++) {
                 JSONObject videoObject = videosArray.getJSONObject(i);
@@ -157,6 +200,8 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (inflater != null) {
+            View firstCardView = null;
+            boolean firstViewTaken = false;
             for (Channel channel : channelList) {
                 View cardView = inflater.inflate(R.layout.card_layout, container, false);
 
@@ -171,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 container.addView(cardView);
-
                 // Set focus change listener for each card
                 cardView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
@@ -198,6 +242,14 @@ public class MainActivity extends AppCompatActivity {
 
                 // Ensure card view is clickable
                 cardView.setClickable(true);
+
+                if(!firstViewTaken){
+                    firstCardView = cardView;
+                    firstViewTaken = true;
+                }
+            }
+            if (firstCardView != null) {
+                firstCardView.requestFocus();
             }
         }
     }
