@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private String token;
     private Button logout_btn;
     private TextView username;
+    private JSONArray channelJsonArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,12 +183,13 @@ public class MainActivity extends AppCompatActivity {
             }
             Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             JSONArray videosArray = dataObject.getJSONArray("videos");
+            channelJsonArray = videosArray;
             for (int i = 0; i < videosArray.length(); i++) {
                 JSONObject videoObject = videosArray.getJSONObject(i);
                 String channelName = videoObject.getString("channelName");
                 String liveURL = videoObject.getString("url");
                 String thumbnail = videoObject.optString("channelLogo", ""); // Use optString to handle optional fields
-                Channel channel = new Channel(channelName, liveURL, thumbnail);
+                Channel channel = new Channel(i, channelName, liveURL, thumbnail);
                 channelList.add(channel);
             }
         } catch (JSONException e) {
@@ -235,7 +237,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-                        intent.putExtra("liveURL", channel.getLiveURL());
+                        intent.putExtra("channelJsonArray", channelJsonArray.toString());
+                        intent.putExtra("channelIndex", channel.getIndex());
                         startActivity(intent);
                     }
                 });
@@ -261,11 +264,13 @@ class Channel {
     private String channelName;
     private String liveURL;
     private String thumbnail;
+    private int idx;
 
-    public Channel(String channelName, String liveURL, String thumbnail) {
+    public Channel(int idx, String channelName, String liveURL, String thumbnail) {
         this.channelName = channelName;
         this.liveURL = liveURL;
         this.thumbnail = thumbnail;
+        this.idx = idx;
     }
 
     public String getChannelName() {
@@ -279,4 +284,5 @@ class Channel {
     public String getThumbnail() {
         return thumbnail;
     }
+    public int getIndex(){return idx;}
 }

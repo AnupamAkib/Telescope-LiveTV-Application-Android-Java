@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.SharedPreferences;
-import android.widget.Toast;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -21,6 +20,15 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 SharedPreferences sharedPreferences = getSharedPreferences("MyPrefsFile", MODE_PRIVATE);
                 String jwt_token = sharedPreferences.getString("accessToken", "");
+
+                //---------------
+
+                //Intent tmp = new Intent(SplashActivity.this, PlayerActivity.class);
+                //tmp.putExtra("liveURL", "https://www.youtube.com/embed/mF6zTmiFaAs");
+                //startActivity(tmp);
+
+                //---------------
+
 
                 Intent intent;
                 if (!jwt_token.equals("")) {
