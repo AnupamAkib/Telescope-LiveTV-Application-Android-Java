@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DISPLAY_LENGTH = 1500; // 3 seconds
+    private static final int SPLASH_DISPLAY_LENGTH = 2200; // 2.2 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

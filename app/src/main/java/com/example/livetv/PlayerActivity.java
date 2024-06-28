@@ -1,10 +1,18 @@
 package com.example.livetv;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -13,12 +21,20 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PlayerActivity extends AppCompatActivity {
+    private static final int MIN_DISTANCE_DP = 150; // Minimum swipe distance in dp
+    private float MIN_DISTANCE; // Minimum swipe distance in pixels
+    private float initialTouchX;
 
+    private FrameLayout overlayLayout;
+
+    //---------------------------------
 
     private WebView webView;
     private int channelIndex;
@@ -29,6 +45,10 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_player);
+
+
+        MIN_DISTANCE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                MIN_DISTANCE_DP, getResources().getDisplayMetrics());
 
         String receivedChannels = getIntent().getStringExtra("channelJsonArray");
         channelIndex = getIntent().getIntExtra("channelIndex", -1);
@@ -53,8 +73,10 @@ public class PlayerActivity extends AppCompatActivity {
             //webView.setWebViewClient(new WebViewClient());
             //webView.setWebChromeClient(new WebChromeClient());
 
-            LoadChannel(channelURL);
+            overlayLayout = findViewById(R.id.overlayLayout);
+            hideOverlay();
 
+            LoadChannel(channelURL);
 
         } catch (JSONException e) {
             Log.d("exception", e.getMessage());
@@ -75,8 +97,8 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+    /*@Override
+    public boolean dispatchKeyEvent(KeyEvent event) { //for physical keybaord
         int keyCode = event.getKeyCode();
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             if (keyCode == KeyEvent.KEYCODE_Q) {
@@ -94,28 +116,36 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
         return super.dispatchKeyEvent(event);
-    }
+    }*/
+
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d("key up code", String.valueOf(keyCode));
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int action = event.getAction();
+        int keyCode = event.getKeyCode();
+        //Toast.makeText(this, "clicked keycode = "+keyCode, Toast.LENGTH_SHORT).show();
+        if (action == KeyEvent.ACTION_DOWN) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_CHANNEL_UP:
+                    //Log.d("TAG", "Channel Up button pressed");
+                    //Toast.makeText(this, "Channel Up button pressed", Toast.LENGTH_SHORT).show();
+                    playNextChannel();
+                    return true;
 
-        if(keyCode == KeyEvent.KEYCODE_CHANNEL_UP){
-            Log.d("TAG", "Channel Up button pressed");
+                case KeyEvent.KEYCODE_CHANNEL_DOWN:
+                    //Log.d("TAG", "Channel Down button pressed");
+                    //Toast.makeText(this, "Channel Down button pressed", Toast.LENGTH_SHORT).show();
+                    playPreviousChannel();
+                    return true;
 
-            playNextChannel();
-
-            return true;
+                default:
+                    return super.dispatchKeyEvent(event);
+            }
         }
-        if(keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN){
-            Log.d("TAG", "Channel Down button pressed");
-
-            playPreviousChannel();
-
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+        return super.dispatchKeyEvent(event);
     }
+
+
 
     private void playNextChannel(){
         if(channelIndex + 1 >= channelJsonArray.length()){
@@ -123,6 +153,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
         else{
             channelIndex++;
+            showOverlay();
             JSONObject videoObject = null;
             try {
                 videoObject = channelJsonArray.getJSONObject(channelIndex);
@@ -140,6 +171,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
         else{
             channelIndex--;
+            showOverlay();
             JSONObject videoObject = null;
             try {
                 videoObject = channelJsonArray.getJSONObject(channelIndex);
@@ -151,8 +183,37 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    private void showOverlay() {
+        try {
+            JSONObject videoObject = channelJsonArray.getJSONObject(channelIndex);
+            String channelLogoURL = videoObject.getString("channelLogo");
+            Log.d("logo orl", channelLogoURL);
+            ImageView channelLogo = findViewById(R.id.channelLogo);
 
-    //gesture functionality
+            TextView channelToLoad = findViewById(R.id.channelToLoad);
 
-    
+            channelToLoad.setText(videoObject.getString("channelName"));
+
+
+            overlayLayout.setVisibility(View.VISIBLE);
+        } catch (JSONException e) {
+            Log.d("exception", e.getMessage());
+        }
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Call your function here
+                hideOverlay();
+            }
+        }, 5000); // 2000 milliseconds = 2 seconds
+    }
+
+    private void hideOverlay() {
+        // Remove the overlay layout
+        //overlayLayout.removeAllViews();
+        //overlayLayout.setBackgroundColor(Color.parseColor("#00000000"));
+        overlayLayout.setVisibility(View.GONE);
+    }
 }

@@ -7,9 +7,55 @@
     android:layout_height="match_parent"
     tools:context=".PlayerActivity">
 
+    <!-- WebView as the main content -->
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- FrameLayout for overlay -->
+    <FrameLayout
+        android:id="@+id/overlayLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black" >
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:paddingBottom="100dp"
+            />
+
+        <ImageView
+            android:id="@+id/channelLogo"
+            android:layout_below="@id/progressBar"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logo"
+            android:layout_gravity="center"
+            android:layout_margin="16dp"/>
+
+        <TextView
+            android:id="@+id/channelToLoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-10dp"
+            android:paddingLeft="16dp"
+            android:paddingBottom="10dp"
+            android:text="LoadingChannel"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:paddingTop="115dp"
+            android:textSize="23sp" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
