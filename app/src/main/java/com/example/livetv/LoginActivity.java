@@ -1,9 +1,9 @@
 package com.example.livetv;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordEditText;
     private Button loginButton;
     private Button withoutLogin;
+    private Button signupButton;
 
     public static final String LOGIN_URL = "https://livetv-njf6.onrender.com/user/login";
     public static final String PREFS_NAME = "MyPrefsFile";
@@ -45,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
         withoutLogin = findViewById(R.id.withoutLogin);
+
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +66,18 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        signupButton = findViewById(R.id.signup);
+        signupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // URL to be opened in the external browser
+                String url = "https://telescope-live.netlify.app/register";
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
                 startActivity(intent);
             }
         });
@@ -97,17 +111,18 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putString(TOKEN_KEY, accessToken);
                                 editor.apply();
 
+                                Toast.makeText(LoginActivity.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
                                 // Navigate to MainActivity
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.putExtra("jwt_token", accessToken);
                                 startActivity(intent);
                                 finish();
                             } else {
-                                Toast.makeText(LoginActivity.this, "Login failed! Enter valid credentials", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this, "Login failed! Wrong username or password", Toast.LENGTH_LONG).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(LoginActivity.this, "An error occurred", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "An error occurred. Please check your internet", Toast.LENGTH_LONG).show();
                         }
                     }
                 },

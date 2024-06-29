@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".PlayerActivity">
 
     <!-- WebView as the main content -->
@@ -31,6 +32,7 @@
             android:layout_centerInParent="true"
             android:layout_gravity="center"
             android:paddingBottom="100dp"
+            android:indeterminateTint="@color/white"
             />
 
         <ImageView

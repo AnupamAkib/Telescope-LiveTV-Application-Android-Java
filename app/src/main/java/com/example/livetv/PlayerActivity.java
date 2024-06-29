@@ -1,12 +1,11 @@
 package com.example.livetv;
 
-import android.graphics.Color;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
@@ -27,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 public class PlayerActivity extends AppCompatActivity {
     private static final int MIN_DISTANCE_DP = 150; // Minimum swipe distance in dp
     private float MIN_DISTANCE; // Minimum swipe distance in pixels
@@ -39,6 +39,8 @@ public class PlayerActivity extends AppCompatActivity {
     private WebView webView;
     private int channelIndex;
     private JSONArray channelJsonArray;
+    private boolean isLoadedScreenHided = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +48,12 @@ public class PlayerActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_player);
 
+        if(!NetworkUtils.isInternetConnected(this)){
+            Intent tmp = new Intent(PlayerActivity.this, ErrorActivity.class);
+            tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(tmp);
+            return;
+        }
 
         MIN_DISTANCE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 MIN_DISTANCE_DP, getResources().getDisplayMetrics());
@@ -70,8 +78,6 @@ public class PlayerActivity extends AppCompatActivity {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
             webSettings.setMediaPlaybackRequiresUserGesture(false); // Important for autoplay
 
-            //webView.setWebViewClient(new WebViewClient());
-            //webView.setWebChromeClient(new WebChromeClient());
 
             overlayLayout = findViewById(R.id.overlayLayout);
             hideOverlay();
@@ -92,27 +98,31 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void LoadChannel(String channelURL){
         // Load the URL with an HTML wrapper
-        String videoHtml = "<html><style>body {margin: 0; padding: 0;}</style><body><iframe width=\"100%\" height=\"100%\" src=\"" + channelURL + "?autoplay=1&mute=0\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe></body></html>";
-        webView.loadData(videoHtml, "text/html", "utf-8");
+        String videoHtml = "<html>" +
+                "<head><style>body {margin: 0; padding: 0;}</style><script src=\"https://www.youtube.com/iframe_api\"></script></head>" +
+                "<body><iframe width=\"100%\" height=\"100%\" src=\"" + channelURL + "?autoplay=1&mute=0\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>" +
+                "</body></html>";
+        webView.loadDataWithBaseURL("https://www.youtube.com", videoHtml, "text/html", "utf-8", null);
     }
-
 
     /*@Override
     public boolean dispatchKeyEvent(KeyEvent event) { //for physical keybaord
         int keyCode = event.getKeyCode();
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (keyCode == KeyEvent.KEYCODE_Q) {
-                Log.d("TAG", "A key pressed");
+        if(isLoadedScreenHided){
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_Q) {
+                    Log.d("TAG", "A key pressed");
 
-                playNextChannel();
+                    playNextChannel();
 
-                return true; // Consume the event
-            } else if (keyCode == KeyEvent.KEYCODE_A) {
-                Log.d("TAG", "A key pressed");
+                    return true; // Consume the event
+                } else if (keyCode == KeyEvent.KEYCODE_A) {
+                    Log.d("TAG", "A key pressed");
 
-                playPreviousChannel();
+                    playPreviousChannel();
 
-                return true; // Consume the event
+                    return true; // Consume the event
+                }
             }
         }
         return super.dispatchKeyEvent(event);
@@ -120,26 +130,28 @@ public class PlayerActivity extends AppCompatActivity {
 
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+    public boolean dispatchKeyEvent(KeyEvent event) { //for TV remote
         int action = event.getAction();
         int keyCode = event.getKeyCode();
         //Toast.makeText(this, "clicked keycode = "+keyCode, Toast.LENGTH_SHORT).show();
-        if (action == KeyEvent.ACTION_DOWN) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_CHANNEL_UP:
-                    //Log.d("TAG", "Channel Up button pressed");
-                    //Toast.makeText(this, "Channel Up button pressed", Toast.LENGTH_SHORT).show();
-                    playNextChannel();
-                    return true;
+        if(isLoadedScreenHided) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_CHANNEL_UP:
+                        //Log.d("TAG", "Channel Up button pressed");
+                        //Toast.makeText(this, "Channel Up button pressed", Toast.LENGTH_SHORT).show();
+                        playNextChannel();
+                        return true;
 
-                case KeyEvent.KEYCODE_CHANNEL_DOWN:
-                    //Log.d("TAG", "Channel Down button pressed");
-                    //Toast.makeText(this, "Channel Down button pressed", Toast.LENGTH_SHORT).show();
-                    playPreviousChannel();
-                    return true;
+                    case KeyEvent.KEYCODE_CHANNEL_DOWN:
+                        //Log.d("TAG", "Channel Down button pressed");
+                        //Toast.makeText(this, "Channel Down button pressed", Toast.LENGTH_SHORT).show();
+                        playPreviousChannel();
+                        return true;
 
-                default:
-                    return super.dispatchKeyEvent(event);
+                    default:
+                        return super.dispatchKeyEvent(event);
+                }
             }
         }
         return super.dispatchKeyEvent(event);
@@ -194,7 +206,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             channelToLoad.setText(videoObject.getString("channelName"));
 
-
+            isLoadedScreenHided = false;
             overlayLayout.setVisibility(View.VISIBLE);
         } catch (JSONException e) {
             Log.d("exception", e.getMessage());
@@ -214,6 +226,8 @@ public class PlayerActivity extends AppCompatActivity {
         // Remove the overlay layout
         //overlayLayout.removeAllViews();
         //overlayLayout.setBackgroundColor(Color.parseColor("#00000000"));
+        isLoadedScreenHided = true;
         overlayLayout.setVisibility(View.GONE);
     }
 }
+

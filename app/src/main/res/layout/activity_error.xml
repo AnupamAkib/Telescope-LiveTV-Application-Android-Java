@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <FrameLayout
+        android:id="@+id/overlayLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/channelLogo"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:src="@drawable/no_internet_icon"
+            android:layout_marginTop="-20dp"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/channelToLoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-10dp"
+            android:paddingLeft="16dp"
+            android:paddingBottom="10dp"
+            android:text="NO INTERNET CONNECTION!"
+            android:textColor="@color/black"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:paddingTop="150dp"
+            android:textStyle="bold"
+            android:textSize="26sp" />
+
+
+    </FrameLayout>
+</RelativeLayout>

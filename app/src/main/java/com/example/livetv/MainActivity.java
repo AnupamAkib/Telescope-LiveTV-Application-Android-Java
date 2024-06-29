@@ -2,7 +2,6 @@ package com.example.livetv;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -19,12 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.content.SharedPreferences;
 import com.squareup.picasso.Picasso;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,10 +33,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 import android.widget.ProgressBar;
 
 
@@ -80,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 if(token != null && !token.isEmpty()){
-                    Toast.makeText(MainActivity.this, "You are logged out!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "You have been logged out!", Toast.LENGTH_SHORT).show();
                 }
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -123,7 +115,10 @@ public class MainActivity extends AppCompatActivity {
                 populateCards();
             } else {
                 if (!isNetworkAvailable()) {
-                    Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Sorry, something went wrong. Please check your internet & try again", Toast.LENGTH_LONG).show();
+                    Intent tmp = new Intent(MainActivity.this, ErrorActivity.class);
+                    tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(tmp);
                 }
                 else{
                     Log.e("MainActivity", "Failed to fetch JSON data");
@@ -181,7 +176,9 @@ public class MainActivity extends AppCompatActivity {
             else{
                 username.setText("Please login to access all channels");
             }
-            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            if(!msg.equals("success")){
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
             JSONArray videosArray = dataObject.getJSONArray("videos");
             channelJsonArray = videosArray;
             for (int i = 0; i < videosArray.length(); i++) {

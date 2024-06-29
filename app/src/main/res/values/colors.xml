@@ -9,4 +9,7 @@
     <color name="teal_700">#018786</color>
 
     <color name="primary">#674FA3</color>
+    <color name="lightGray">#dbdbdb</color>
+    <color name="infoColor">#fffdbd</color>
+    <color name="darkGray">#666666</color>
 </resources>

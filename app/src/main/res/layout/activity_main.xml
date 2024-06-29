@@ -9,22 +9,32 @@
 
     <!-- Add ProgressBar -->
 
+
+    <!-- Telescope LIVE text here, currently hidden -->
     <TextView
         android:id="@+id/welcomeMessageTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Telescope LIVE"
+        android:text=""
         android:textColor="@android:color/black"
         android:textSize="24sp"
         android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/telescopeLogo"
+        android:layout_width="160dp"
+        android:layout_height="62dp"
+        android:layout_marginLeft="8dp"
+        android:alpha="0.90"
+        android:src="@drawable/logo_black"/>
 
     <TextView
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/welcomeMessageTextView"
-        android:layout_marginTop="-10dp"
+        android:layout_marginTop="-5dp"
         android:paddingLeft="16dp"
         android:paddingBottom="10dp"
         android:text="Hello, user"
