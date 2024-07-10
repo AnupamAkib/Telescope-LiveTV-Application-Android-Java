@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg"
     tools:context=".LoginActivity">
 
     <ScrollView
@@ -20,11 +21,11 @@
             android:id="@+id/contentLayout"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
-            android:background="@color/lightGray"
+            android:background="#30000000"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_gravity="center"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="5dp"
             android:padding="20dp">
 
             <ImageView

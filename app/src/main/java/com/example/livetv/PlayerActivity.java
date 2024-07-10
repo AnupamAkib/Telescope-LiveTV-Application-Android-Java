@@ -1,6 +1,8 @@
 package com.example.livetv;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -20,11 +22,25 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 
 public class PlayerActivity extends AppCompatActivity {
@@ -96,13 +112,18 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void LoadChannel(String channelURL){
+    private void LoadChannel(String channelURL) throws JSONException {
         // Load the URL with an HTML wrapper
         String videoHtml = "<html>" +
                 "<head><style>body {margin: 0; padding: 0;}</style><script src=\"https://www.youtube.com/iframe_api\"></script></head>" +
                 "<body><iframe width=\"100%\" height=\"100%\" src=\"" + channelURL + "?autoplay=1&mute=0\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>" +
                 "</body></html>";
         webView.loadDataWithBaseURL("https://www.youtube.com", videoHtml, "text/html", "utf-8", null);
+
+        JSONObject videoObject = channelJsonArray.getJSONObject(channelIndex);
+        String channelName = videoObject.getString("channelName");
+
+        saveActivity(channelName);
     }
 
     /*@Override
@@ -138,14 +159,10 @@ public class PlayerActivity extends AppCompatActivity {
             if (action == KeyEvent.ACTION_DOWN) {
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_CHANNEL_UP:
-                        //Log.d("TAG", "Channel Up button pressed");
-                        //Toast.makeText(this, "Channel Up button pressed", Toast.LENGTH_SHORT).show();
                         playNextChannel();
                         return true;
 
                     case KeyEvent.KEYCODE_CHANNEL_DOWN:
-                        //Log.d("TAG", "Channel Down button pressed");
-                        //Toast.makeText(this, "Channel Down button pressed", Toast.LENGTH_SHORT).show();
                         playPreviousChannel();
                         return true;
 
@@ -229,5 +246,63 @@ public class PlayerActivity extends AppCompatActivity {
         isLoadedScreenHided = true;
         overlayLayout.setVisibility(View.GONE);
     }
-}
 
+
+    private void saveActivity(String channelName) {
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefsFile", MODE_PRIVATE);
+        String jwt_token = sharedPreferences.getString("accessToken", "");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+
+                String URL = "https://livetv-njf6.onrender.com/tv/checkAvailability";
+
+                JSONObject requestBody = new JSONObject();
+                try {
+                    requestBody.put("channelName", channelName);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json; charset=utf-8"));
+
+                Request request = new Request.Builder()
+                        .url(URL)
+                        .post(body)
+                        .addHeader("Authorization", "Bearer " + jwt_token)
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    if (response.isSuccessful()) {
+                        String responseData = response.body().string();
+                        Log.d("PlayerActivity", "Response received: " + responseData);
+                        //runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Saved activity!", Toast.LENGTH_SHORT).show());
+                    } else {
+                        Log.e("PlayerActivity", "Request failed: " + response.code());
+                        //runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Failed to save activity!", Toast.LENGTH_SHORT).show());
+                    }
+                } catch (IOException e) {
+                    Log.e("PlayerActivity", "IOException occurred: " + e.getMessage());
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error saving activity!", Toast.LENGTH_SHORT).show());
+                }
+            }
+        }).start();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Perform any necessary cleanup here
+        // For example, unregister any receivers, stop services, etc.
+        // Stop video playback in WebView
+        if (webView != null) {
+            webView.stopLoading();
+            webView.onPause();
+            webView.destroy();
+        }
+        webView = null; // Release WebView reference
+    }
+}

@@ -17,7 +17,7 @@
         android:layout_height="70dp"
         android:scaleType="centerCrop"
         android:layout_gravity="center_horizontal"
-        android:src="@drawable/live" />
+        android:src="@drawable/icon" />
 
     <TextView
         android:id="@+id/nameTextView"

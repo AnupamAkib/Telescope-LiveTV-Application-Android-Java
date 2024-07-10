@@ -2,7 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"
+    >
 
 
     <!-- Welcome message TextView -->
@@ -20,9 +22,9 @@
 
     <ImageView
         android:id="@+id/telescopeLogo"
-        android:layout_width="180dp"
+        android:layout_width="155dp"
         android:layout_height="60dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginLeft="10dp"
         android:alpha="0.90"
         android:src="@drawable/logo_black"/>
 
@@ -31,11 +33,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/welcomeMessageTextView"
-        android:layout_marginTop="-5dp"
-        android:paddingLeft="16dp"
+        android:layout_marginTop="-6dp"
+        android:paddingLeft="20dp"
         android:paddingBottom="10dp"
         android:text="Hello, user"
-        android:textSize="19sp" />
+        android:textSize="18sp" />
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -50,6 +52,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/username"
+
         android:fillViewport="true">
 
         <GridLayout
@@ -58,6 +61,8 @@
             android:layout_height="wrap_content"
             android:columnCount="4"
             android:padding="8dp"
+            android:paddingStart="80dp"
+            android:paddingEnd="80dp"
             android:orientation="horizontal"
             android:rowCount="10">
 

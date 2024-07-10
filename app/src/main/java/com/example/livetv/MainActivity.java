@@ -1,6 +1,8 @@
 package com.example.livetv;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -46,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView username;
     private JSONArray channelJsonArray;
 
+    AlertDialog.Builder builder;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,21 +66,47 @@ public class MainActivity extends AppCompatActivity {
             logout_btn.setText("LOGIN");
         }
 
+        builder = new AlertDialog.Builder(this);
 
         logout_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences sharedPreferences = getSharedPreferences("MyPrefsFile", MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("accessToken", "");
-                editor.apply();
-
                 if(token != null && !token.isEmpty()){
-                    Toast.makeText(MainActivity.this, "You have been logged out!", Toast.LENGTH_SHORT).show();
+                    //Setting message manually and performing action on button click
+                    builder.setMessage("Are you sure you want to log out? If you are logged out, you will not be able to watch all the channels.")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    SharedPreferences sharedPreferences = getSharedPreferences("MyPrefsFile", MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putString("accessToken", "");
+                                    editor.apply();
+
+                                    Toast.makeText(MainActivity.this, "You have been logged out!", Toast.LENGTH_SHORT).show();
+
+                                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    //  Action for 'NO' Button
+                                    dialog.cancel();
+                                }
+                            });
+
+                    //Creating dialog box
+                    AlertDialog alert = builder.create();
+                    //Setting the title manually
+                    alert.setTitle("Log out confirmation");
+                    alert.show();
                 }
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                else{
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -135,12 +165,11 @@ public class MainActivity extends AppCompatActivity {
         // Replace the URL with your API endpoint
         String url = "https://livetv-njf6.onrender.com/tv";
 
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer " + token)
-                .build();
-
         try {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("Authorization", "Bearer " + token)
+                    .build();
             Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
                 ResponseBody responseBody = response.body();
@@ -148,12 +177,21 @@ public class MainActivity extends AppCompatActivity {
                     return responseBody.string();
                 } else {
                     Log.d("MainActivity", "Response body is empty");
+                    Toast.makeText(MainActivity.this, "Sorry, something went wrong!", Toast.LENGTH_LONG).show();
                 }
             } else {
                 Log.d("MainActivity", "Request failed with code: " + response.code());
+                Toast.makeText(MainActivity.this, "Sorry, something went wrong. Please check your internet & try again", Toast.LENGTH_LONG).show();
+                Intent tmp = new Intent(MainActivity.this, ErrorActivity.class);
+                tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(tmp);
             }
         } catch (IOException e) {
             Log.e("MainActivity", "IOException occurred: " + e.getMessage());
+            Toast.makeText(MainActivity.this, "Sorry, something went wrong. Please check your internet & try again", Toast.LENGTH_LONG).show();
+            Intent tmp = new Intent(MainActivity.this, ErrorActivity.class);
+            tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(tmp);
         }
         return null;
     }

@@ -38,7 +38,7 @@
         <ImageView
             android:id="@+id/channelLogo"
             android:layout_below="@id/progressBar"
-            android:layout_width="200dp"
+            android:layout_width="185dp"
             android:layout_height="wrap_content"
             android:src="@drawable/logo"
             android:layout_gravity="center"

@@ -2,36 +2,36 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@drawable/bg">
 
-    <FrameLayout
-        android:id="@+id/overlayLayout"
+
+    <ImageView
+        android:id="@+id/channelLogo"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="120dp"
+        android:src="@drawable/nointernet"
+        android:layout_marginTop="65dp"/>
 
-        <ImageView
-            android:id="@+id/channelLogo"
-            android:layout_width="130dp"
-            android:layout_height="130dp"
-            android:src="@drawable/no_internet_icon"
-            android:layout_marginTop="-20dp"
-            android:layout_gravity="center"/>
+    <TextView
+        android:id="@+id/channelToLoad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="NO INTERNET CONNECTION!"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:layout_below="@+id/channelLogo"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/channelToLoad"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="-10dp"
-            android:paddingLeft="16dp"
-            android:paddingBottom="10dp"
-            android:text="NO INTERNET CONNECTION!"
-            android:textColor="@color/black"
-            android:layout_gravity="center"
-            android:textAlignment="center"
-            android:paddingTop="150dp"
-            android:textStyle="bold"
-            android:textSize="26sp" />
+    <TextView
+        android:id="@+id/sugg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:text="১. ইন্টারনেট আছে কিনা চেক করুন\n২. এই ডিভাইস Wifi এর সাথে সংযুক্ত কিনা চেক করুন\n৩. রাউটার বন্ধ করে চালু করুন"
+        android:textColor="@color/black"
+        android:layout_below="@+id/channelToLoad"
+        android:textSize="20sp" />
 
 
-    </FrameLayout>
 </RelativeLayout>
