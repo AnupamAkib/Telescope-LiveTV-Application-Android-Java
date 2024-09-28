@@ -8,15 +8,15 @@
     android:background="@color/black"
     tools:context=".PlayerActivity">
 
-    <!-- WebView as the main content -->
-    <WebView
-        android:id="@+id/webview"
+    <FrameLayout
+        android:id="@+id/webviewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:orientation="vertical">
+
+        <!-- You can add other views here if needed -->
+
+    </FrameLayout>
 
     <!-- FrameLayout for overlay -->
     <FrameLayout

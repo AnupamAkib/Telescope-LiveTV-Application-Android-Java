@@ -9,8 +9,11 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
+import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,6 +37,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -57,6 +63,12 @@ public class PlayerActivity extends AppCompatActivity {
     private JSONArray channelJsonArray;
     private boolean isLoadedScreenHided = true;
 
+    private List<WebView> webViewList = new ArrayList<>();
+    private int currentChannelIndex = 0;
+
+    private final int CHANNEL_BETWEEN_TIME = 600;
+
+    private boolean [] flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,36 +83,27 @@ public class PlayerActivity extends AppCompatActivity {
             return;
         }
 
+        flag = new boolean[200];
+        Arrays.fill(flag, false);
+
         MIN_DISTANCE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 MIN_DISTANCE_DP, getResources().getDisplayMetrics());
 
         String receivedChannels = getIntent().getStringExtra("channelJsonArray");
         channelIndex = getIntent().getIntExtra("channelIndex", -1);
+        currentChannelIndex = channelIndex;
 
         try {
             channelJsonArray = new JSONArray(receivedChannels);
-            JSONObject videoObject = channelJsonArray.getJSONObject(channelIndex);
-            String channelURL = videoObject.getString("url");
 
-            //Log.d("player", channelJsonArray.toString());
-            //Log.d("player", "channel idx = "+channelIndex);
-
-            webView = findViewById(R.id.webview);
-
-            // Enable JavaScript and other necessary settings
-            WebSettings webSettings = webView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
-            webSettings.setDomStorageEnabled(true);
-            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-            webSettings.setMediaPlaybackRequiresUserGesture(false); // Important for autoplay
-
+            preloadChannels();
 
             overlayLayout = findViewById(R.id.overlayLayout);
+
+            LoadChannel();
             hideOverlay();
 
-            LoadChannel(channelURL);
-
-        } catch (JSONException e) {
+        } catch (Exception e) {
             Log.d("exception", e.getMessage());
         }
 
@@ -112,21 +115,150 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void LoadChannel(String channelURL) throws JSONException {
-        // Load the URL with an HTML wrapper
-        String videoHtml = "<html>" +
-                "<head><style>body {margin: 0; padding: 0;}</style><script src=\"https://www.youtube.com/iframe_api\"></script></head>" +
-                "<body><iframe width=\"100%\" height=\"100%\" src=\"" + channelURL + "?autoplay=1&mute=0\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>" +
-                "</body></html>";
-        webView.loadDataWithBaseURL("https://www.youtube.com", videoHtml, "text/html", "utf-8", null);
+    private void preloadChannels() {
+        for (int i = 0; i < channelJsonArray.length(); i++) {
+            try {
+                final int index = i;  // Create a final copy of 'i'
+
+                JSONObject videoObject = channelJsonArray.getJSONObject(index);  // Use 'index' instead of 'i'
+                String channelURL = videoObject.getString("url");
+
+                // Create a new WebView and preload the video
+                WebView webView = new WebView(this);
+                webView.getSettings().setJavaScriptEnabled(true);
+                webView.getSettings().setDomStorageEnabled(true);
+
+                webView.setWebViewClient(new WebViewClient());
+
+                // Unique ID for the iframe and JavaScript functions
+                String iframeId = "player" + index;  // Use 'index' instead of 'i'
+
+                int isMute = 1;
+
+                // Ensure that JavaScript variables and functions are unique for each WebView
+                String videoHtml = "<html>" +
+                        "<head><style>body {margin: 0; padding: 0;}</style></head>" +
+                        "<body>" +
+                        "<iframe id=\"" + iframeId + "\" width=\"100%\" height=\"90%\" src=\"" + channelURL + "?enablejsapi=1&autoplay=1&mute="+isMute+"\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>" +
+                        "<button onclick=\"unmuteVideo" + index + "()\">Unmute" + index + "</button>" +
+                        "<button onclick=\"muteVideo" + index + "()\">Mute" + index + "</button>" +
+                        "<button onclick=\"playVdo" + index + "()\">Play" + index + "</button>" +
+                        "<script src=\"https://www.youtube.com/iframe_api\"></script>" +
+                        "<script>" +
+                        "  var player" + index + ";" + // Unique player variable per WebView
+                        "  function initPlayer() {" +
+                        "    player" + index + " = new YT.Player('" + iframeId + "', {" +
+                        "      events: {" +
+                        "        'onReady': onPlayerReady" + index + "," +
+                        "        'onStateChange': onPlayerStateChange" + index +
+                        "      }" +
+                        "    });" +
+                        "  }" +
+                        "  function onPlayerReady" + index + "(event) {" +
+                        "    event.target.playVideo();" +
+                        "  }" +
+                        "  function onPlayerStateChange" + index + "(event) {" +
+                        "    if (event.data == YT.PlayerState.PLAYING) {" +
+                        "      console.log('Video " + index + " is playing.');" +
+                        "    }" +
+                        "  }" +
+                        "  function muteVideo" + index + "() {" +
+                        "    if (player" + index + ") {" +
+                        "      player" + index + ".mute();" +
+                        "      player" + index + ".playVideo();" +
+                        "    } else {" +
+                        "      console.log('Player " + index + " is not ready.');" +
+                        "    }" +
+                        "  }" +
+                        "  function unmuteVideo" + index + "() {" +
+                        "    if (player" + index + ") {" +
+                        "      player" + index + ".unMute();" +
+                        "      player" + index + ".setVolume(100);" +
+                        "      player" + index + ".playVideo();" +
+                        "    } else {" +
+                        "      console.log('Player " + index + " is not ready.');" +
+                        "    }" +
+                        "  }" +
+                        "  function playVdo" + index + "() {" +
+                        "      player" + index + ".playVideo();" +
+                        "  }" +
+                        "  initPlayer();" +  // Initialize the player when this script runs
+                        "</script>" +
+                        "</body></html>";
+
+                webView.addJavascriptInterface(new Object() {
+                    @JavascriptInterface
+                    public void mute() {
+                        webView.evaluateJavascript("muteVideo" + index + "();", null); // Call unique JS mute function
+                    }
+
+                    @JavascriptInterface
+                    public void unmute() {
+                        webView.evaluateJavascript("unmuteVideo" + index + "();", null); // Call unique JS unmute function
+                    }
+                }, "Android");
+
+                // Preload the content in the WebView
+                webView.loadDataWithBaseURL("https://www.youtube.com", videoHtml, "text/html", "utf-8", null);
+
+                // Hide the WebView initially
+                webView.setVisibility(View.GONE);
+
+                // Add to the list of preloaded WebViews
+                webViewList.add(webView);
+
+                // Add the WebView to the layout
+                ((ViewGroup) findViewById(R.id.webviewContainer)).addView(webView);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void switchToChannel(int index) {
+        if (index < 0 || index >= webViewList.size()) {
+            return; // Index out of bounds, do nothing
+        }
+
+        // Hide the current WebView
+        WebView currentWebView = webViewList.get(currentChannelIndex);
+        currentWebView.setVisibility(View.GONE);
+
+        EnableSound(index);
+
+        // Show the next WebView
+        WebView nextWebView = webViewList.get(index);
+        nextWebView.setVisibility(View.VISIBLE);
+
+        // Update the current channel index
+        currentChannelIndex = index;
+    }
+
+    private void LoadChannel() throws JSONException {
+        switchToChannel(channelIndex);
 
         JSONObject videoObject = channelJsonArray.getJSONObject(channelIndex);
         String channelName = videoObject.getString("channelName");
-
         saveActivity(channelName);
     }
 
-    /*@Override
+    private void EnableSound(int idx) {
+        Handler handler = new Handler(); // Create a new Handler for managing delays
+        int delay = 20; // Set your desired delay in milliseconds
+
+        // Mute all WebViews first
+        for (int i = 0; i < webViewList.size(); i++) {
+            final int index = i; // Final reference for use in the Runnable
+            handler.postDelayed(() -> {
+                webViewList.get(index).evaluateJavascript("muteVideo" + index + "();", null);
+                //webViewList.get(index).evaluateJavascript("playVdo" + index + "();", null);
+            }, delay); // Delay increases with each iteration
+        }
+    }
+
+
+    @Override
     public boolean dispatchKeyEvent(KeyEvent event) { //for physical keybaord
         int keyCode = event.getKeyCode();
         if(isLoadedScreenHided){
@@ -147,10 +279,10 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
         return super.dispatchKeyEvent(event);
-    }*/
+    }
 
 
-    @Override
+    /*@Override
     public boolean dispatchKeyEvent(KeyEvent event) { //for TV remote
         int action = event.getAction();
         int keyCode = event.getKeyCode();
@@ -172,7 +304,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
         return super.dispatchKeyEvent(event);
-    }
+    }*/
 
 
 
@@ -183,11 +315,8 @@ public class PlayerActivity extends AppCompatActivity {
         else{
             channelIndex++;
             showOverlay();
-            JSONObject videoObject = null;
             try {
-                videoObject = channelJsonArray.getJSONObject(channelIndex);
-                String channelURL = videoObject.getString("url");
-                LoadChannel(channelURL);
+                LoadChannel();
             } catch (JSONException e) {
                 Log.d("exception", e.getMessage());
             }
@@ -201,11 +330,8 @@ public class PlayerActivity extends AppCompatActivity {
         else{
             channelIndex--;
             showOverlay();
-            JSONObject videoObject = null;
             try {
-                videoObject = channelJsonArray.getJSONObject(channelIndex);
-                String channelURL = videoObject.getString("url");
-                LoadChannel(channelURL);
+                LoadChannel();
             } catch (JSONException e) {
                 Log.d("exception", e.getMessage());
             }
@@ -236,13 +362,53 @@ public class PlayerActivity extends AppCompatActivity {
                 // Call your function here
                 hideOverlay();
             }
-        }, 5000); // 2000 milliseconds = 2 seconds
+        }, CHANNEL_BETWEEN_TIME); // 2000 milliseconds = 2 seconds
     }
 
     private void hideOverlay() {
-        // Remove the overlay layout
-        //overlayLayout.removeAllViews();
-        //overlayLayout.setBackgroundColor(Color.parseColor("#00000000"));
+        int delay = 1500; // Set your desired delay in milliseconds
+
+        Handler handler = new Handler(); // Create a new Handler for managing delays
+
+        if(!flag[channelIndex]){
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        LoadChannel();
+                        flag[channelIndex] = true;
+                    }
+                    catch(Exception e){}
+                }
+            }, delay);
+
+        }
+
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // for (int i = 0; i < 10; i++) {
+                webViewList.get(channelIndex).evaluateJavascript("unmuteVideo" + channelIndex + "();", null);
+                //Toast.makeText(PlayerActivity.this, "channel idx = "+channelIndex, Toast.LENGTH_SHORT).show();
+                // }
+            }
+        }, delay);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // for (int i = 0; i < 10; i++) {
+                webViewList.get(channelIndex).evaluateJavascript("unmuteVideo" + channelIndex + "();", null);
+                //Toast.makeText(PlayerActivity.this, "channel idx = "+channelIndex, Toast.LENGTH_SHORT).show();
+                // }
+            }
+        }, delay);
+
+
+        // Mute all WebViews first
+
+
         isLoadedScreenHided = true;
         overlayLayout.setVisibility(View.GONE);
     }
@@ -261,7 +427,7 @@ public class PlayerActivity extends AppCompatActivity {
 
                 JSONObject requestBody = new JSONObject();
                 try {
-                    requestBody.put("channelName", channelName);
+                    requestBody.put("channelName", channelName+" (from app)");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -298,11 +464,13 @@ public class PlayerActivity extends AppCompatActivity {
         // Perform any necessary cleanup here
         // For example, unregister any receivers, stop services, etc.
         // Stop video playback in WebView
-        if (webView != null) {
-            webView.stopLoading();
-            webView.onPause();
-            webView.destroy();
+
+        for(WebView wv : webViewList){
+            if (wv != null) {
+                wv.stopLoading();
+                wv.onPause();
+                wv.destroy();
+            }
         }
-        webView = null; // Release WebView reference
     }
 }
