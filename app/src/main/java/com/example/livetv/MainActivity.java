@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private Button logout_btn;
     private TextView username;
     private JSONArray channelJsonArray;
+    private ImageButton settingsBtn;
 
     AlertDialog.Builder builder;
 
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
 
         logout_btn = findViewById(R.id.logout_btn);
+        settingsBtn = findViewById(R.id.settings_btn);
         username = findViewById(R.id.username);
 
         if (token == null || token.isEmpty()) {
@@ -110,6 +113,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // Execute AsyncTask to fetch JSON data
         new FetchDataAsyncTask().execute();
@@ -163,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient();
 
         // Replace the URL with your API endpoint
-        String url = "https://livetv-njf6.onrender.com/tv";
+        String url = Server.getBackendUrl(this)+"/tv";
 
         try {
             Request request = new Request.Builder()
@@ -181,14 +191,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 Log.d("MainActivity", "Request failed with code: " + response.code());
-                Toast.makeText(MainActivity.this, "Sorry, something went wrong. Please check your internet & try again", Toast.LENGTH_LONG).show();
                 Intent tmp = new Intent(MainActivity.this, ErrorActivity.class);
                 tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(tmp);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e("MainActivity", "IOException occurred: " + e.getMessage());
-            Toast.makeText(MainActivity.this, "Sorry, something went wrong. Please check your internet & try again", Toast.LENGTH_LONG).show();
             Intent tmp = new Intent(MainActivity.this, ErrorActivity.class);
             tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(tmp);

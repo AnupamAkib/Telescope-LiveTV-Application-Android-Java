@@ -68,12 +68,29 @@
         </GridLayout>
 
     </ScrollView>
+
+    <ImageButton
+        android:id="@+id/settings_btn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:alpha="0.9"
+        android:layout_toStartOf="@+id/logout_btn"
+        android:contentDescription="SETTINGS BUTTON"
+        android:textColor="@color/black"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/setting_icon" />
+
     <Button
         android:id="@+id/logout_btn"
         android:layout_width="110dp"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/welcomeMessageTextView"
-        android:layout_margin="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="5dp"
         android:text="LOGOUT" />
+
 
 </RelativeLayout>

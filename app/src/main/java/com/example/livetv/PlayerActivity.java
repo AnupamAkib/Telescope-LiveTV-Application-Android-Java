@@ -48,6 +48,7 @@ public class PlayerActivity extends AppCompatActivity {
     private float MIN_DISTANCE; // Minimum swipe distance in pixels
     private float initialTouchX;
 
+    private String server_url = "";
     private FrameLayout overlayLayout;
 
     //---------------------------------
@@ -70,6 +71,8 @@ public class PlayerActivity extends AppCompatActivity {
             startActivity(tmp);
             return;
         }
+
+        server_url = Server.getBackendUrl(this);
 
         MIN_DISTANCE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 MIN_DISTANCE_DP, getResources().getDisplayMetrics());
@@ -257,11 +260,11 @@ public class PlayerActivity extends AppCompatActivity {
             public void run() {
                 OkHttpClient client = new OkHttpClient();
 
-                String URL = "https://livetv-njf6.onrender.com/tv/checkAvailability";
+                String URL = server_url+"/tv/checkAvailability";
 
                 JSONObject requestBody = new JSONObject();
                 try {
-                    requestBody.put("channelName", channelName);
+                    requestBody.put("channelName", channelName+" (app)");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

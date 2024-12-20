@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg">
+
+
+    <!-- Welcome message TextView -->
+
+    <!-- Add ProgressBar -->
+
+
+    <!-- Telescope LIVE text here, currently hidden -->
+    <TextView
+        android:id="@+id/welcomeMessageTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text=""
+        android:textColor="@android:color/black"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/telescopeLogo"
+        android:layout_width="150dp"
+        android:layout_height="62dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="27dp"
+        android:alpha="0.90"
+        android:src="@drawable/logo_black"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="80dp"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/contentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#30000000"
+            android:gravity="center"
+            android:layout_margin="30dp"
+            android:layout_below="@id/username"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="App Settings"
+                android:textSize="30sp"
+                android:layout_marginBottom="24dp"
+                android:textColor="@android:color/black"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Please enter the backend server URL"
+                android:textColor="@android:color/black"
+                />
+
+            <EditText
+                android:id="@+id/serverUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Backend Server URL"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/edittext_background_unfocused"
+                android:backgroundTint="@color/white"
+                android:focusable="true"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/saveSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="APPLY CHANGES"
+                android:backgroundTint="@color/primary"
+                android:textColor="@android:color/white"
+                android:focusable="true"
+                android:padding="12dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</RelativeLayout>
+

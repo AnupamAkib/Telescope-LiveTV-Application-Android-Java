@@ -33,7 +33,6 @@ public class LoginActivity extends AppCompatActivity {
     private Button withoutLogin;
     private Button signupButton;
 
-    public static final String LOGIN_URL = "https://livetv-njf6.onrender.com/user/login";
     public static final String PREFS_NAME = "MyPrefsFile";
     public static final String TOKEN_KEY = "accessToken";
 
@@ -96,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.POST,
-                LOGIN_URL,
+                Server.getBackendUrl(this)+"/user/login",
                 requestBody,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -136,6 +135,9 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
                         } catch (Exception e) {
                             Toast.makeText(LoginActivity.this, "An error occurred", Toast.LENGTH_SHORT).show();
+                            Intent tmp = new Intent(LoginActivity.this, ErrorActivity.class);
+                            tmp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(tmp);
                         }
                     }
                 }

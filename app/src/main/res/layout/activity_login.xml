@@ -127,7 +127,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Telescope LIVE | version 5.8\nDeveloped by Mir Anupam Hossain Akib"
+        android:text="Telescope LIVE | version 6.1\nDeveloped by Mir Anupam Hossain Akib"
         android:textSize="14sp"
         android:textColor="@color/darkGray"
         android:gravity="bottom"

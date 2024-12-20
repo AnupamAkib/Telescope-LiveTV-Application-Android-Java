@@ -16,7 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LiveTV"
         tools:targetApi="31">
-
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
         <activity
             android:name=".SplashActivity"
             android:exported="true">
@@ -39,7 +41,7 @@
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
-            android:exported="false"/>
+            android:exported="false" />
     </application>
 
 </manifest>
